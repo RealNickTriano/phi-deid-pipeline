@@ -83,10 +83,14 @@ def _device_recognizer() -> PatternRecognizer:
         supported_entity=DEVICE_ID,
         name="DeviceIdRecognizer",
         patterns=[
+            # The label keyword + separator are mandatory so the value group
+            # can't latch onto an ordinary word (patterns are IGNORECASE, so a
+            # bare ``[A-Z0-9][A-Z0-9-]{4,}`` would otherwise match "Serial").
+            # The value must contain a digit, ruling out plain words entirely.
             Pattern(
                 "device_labeled",
-                r"\b(?:Serial|Device|Implant|Lot)\s*(?:Number|No\.?|#|ID)?\s*"
-                r"[:#]?\s*([A-Z0-9][A-Z0-9\-]{4,})\b",
+                r"\b(?:Serial|Device|Implant|Lot)\s+(?:Number|No\.?|#|ID)\s*"
+                r"[:#]\s*([A-Z0-9-]*\d[A-Z0-9-]*)\b",
                 0.75,
             ),
         ],

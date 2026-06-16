@@ -8,12 +8,17 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from typing import List
 
 from .evaluate import evaluate, format_report
+from .pseudonymize import pseudonymize, reidentify
 from .pipeline import deidentify, detect_entities
 from .synthetic import generate_notes
+
+# Salt for the hashed-key output. Override per deployment; secret in production.
+_DEFAULT_SALT = "phi-deid-default-salt-change-me"
 
 
 def _configure_logging(debug: bool) -> None:
@@ -44,6 +49,19 @@ def _cmd_deidentify(args: argparse.Namespace) -> int:
             f"  {e.entity_type:<24} [{e.start}:{e.end}]  score={e.score:.4f}  "
             f"{text[e.start:e.end]!r}"
         )
+
+    salt = os.environ.get("PHI_DEID_SALT", _DEFAULT_SALT)
+    pseudonymized_text, vault = pseudonymize(text, entities, salt)
+    print("\n========== PSEUDONYMIZED OUTPUT ==========\n")
+    sys.stdout.write(pseudonymized_text)
+    if not pseudonymized_text.endswith("\n"):
+        sys.stdout.write("\n")
+
+    reidentified = reidentify(pseudonymized_text, vault)
+    print("\n========== RE-IDENTIFIED OUTPUT ==========\n")
+    sys.stdout.write(reidentified)
+    if not reidentified.endswith("\n"):
+        sys.stdout.write("\n")
     return 0
 
 

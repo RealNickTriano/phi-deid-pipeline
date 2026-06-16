@@ -65,18 +65,50 @@ def build_anonymizer() -> AnonymizerEngine:
     return AnonymizerEngine()
 
 
+def _overlaps(a: RecognizerResult, b: RecognizerResult) -> bool:
+    return a.start < b.end and b.start < a.end
+
+
+def reconcile(results: List[RecognizerResult]) -> List[RecognizerResult]:
+    """Resolve overlapping detections, keeping the strongest span in each clash.
+
+    Different recognizers routinely fire on the same characters (e.g. an SSN that
+    also matches the phone pattern, or an email whose domain matches a URL). The
+    [reconcile] stage picks one winner per overlap so the redaction and the
+    returned entity list agree.
+
+    Greedy by ``(score, span length)``: take the highest-scoring candidate, drop
+    anything it overlaps, repeat. Longer spans break score ties (more coverage),
+    then entity type for determinism. Non-overlapping spans are all kept.
+    """
+    ordered = sorted(
+        results,
+        key=lambda r: (r.score, r.end - r.start, r.entity_type),
+        reverse=True,
+    )
+    kept: List[RecognizerResult] = []
+    for cand in ordered:
+        if not any(_overlaps(cand, k) for k in kept):
+            kept.append(cand)
+    # return in document order for stable, readable output
+    return sorted(kept, key=lambda r: (r.start, r.end))
+
+
 def detect(text: str, language: str = "en") -> List[RecognizerResult]:
-    """Return raw analyzer results above the score threshold."""
+    """Return reconciled analyzer results above the score threshold."""
     logger.debug(
         "detect: analyzing %d chars (language=%s, score_threshold=%.2f)",
         len(text),
         language,
         SCORE_THRESHOLD,
     )
-    results = build_analyzer().analyze(
+    raw = build_analyzer().analyze(
         text=text, language=language, score_threshold=SCORE_THRESHOLD
     )
-    logger.debug("detect: %d span(s) above threshold", len(results))
+    results = reconcile(raw)
+    logger.debug(
+        "detect: %d raw span(s) -> %d after reconcile", len(raw), len(results)
+    )
     for r in results:
         logger.debug(
             "  %-22s [%d:%d] score=%.4f text=%r",

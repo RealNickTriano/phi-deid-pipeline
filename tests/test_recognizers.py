@@ -38,8 +38,17 @@ def test_beneficiary_matches():
 
 
 def test_device_id_matches():
-    results = _detect("DeviceIdRecognizer", "Implant Serial No: XR-4490AB tracked.", DEVICE_ID)
+    text = "Implant Serial No: XR-4490AB tracked."
+    results = _detect("DeviceIdRecognizer", text, DEVICE_ID)
     assert results, "expected a device id match"
+    # the matched span must cover the actual serial value, not just the label
+    assert any("XR-4490AB" in text[r.start : r.end] for r in results)
+
+
+def test_device_id_no_false_positive_on_bare_word():
+    # IGNORECASE used to let the value group match a plain word like "Serial"
+    results = _detect("DeviceIdRecognizer", "Serial entry in the log.", DEVICE_ID)
+    assert not results, "plain word should not match a device id"
 
 
 def test_date_formats_match():
