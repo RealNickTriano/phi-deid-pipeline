@@ -1,0 +1,18 @@
+DISCHARGE SUMMARY
+
+Patient: Margaret Halloway (MRN: 04827193)
+Date of birth: 07/22/1958
+Admitted: 03/14/2025    Discharged: March 18, 2025
+
+Mrs. Halloway is a 66-year-old resident of Cedar Rapids who presented with
+chest pain. She was seen by Dr. Alan Whitfield in the cardiology unit.
+
+Identifiers on file:
+  SSN: 078-05-1120
+  Account No. 0099887766
+  Insurance Member ID AB123456
+  Pacemaker Implant Serial No: XR-4490AB
+
+Contact: primary phone 231-886-0913, email margaret.halloway@example.org.
+Follow-up visit scheduled for 04/02/2025 at the Cedar Rapids clinic.
+Records faxed to referring physician on 2025-03-19.
