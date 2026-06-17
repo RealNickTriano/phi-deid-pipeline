@@ -4,6 +4,10 @@ A hybrid (rule-first) pipeline that detects and redacts **Protected Health
 Information** from free-text clinical notes, built on
 [Microsoft Presidio](https://github.com/microsoft/presidio).
 
+## Overarching Idea
+<img width="1248" height="629" alt="image" src="https://github.com/user-attachments/assets/7e844bec-2da3-4522-8d14-c3e4450fa139" />
+
+
 **Why this matters:** a generative model trained on inadequately de-identified
 notes can reproduce patient names and details at inference time. De-identification
 is what makes real clinical data *safe to train on* — it's the gate in front of
